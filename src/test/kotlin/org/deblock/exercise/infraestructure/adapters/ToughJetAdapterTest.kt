@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.web.client.RestTemplate
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 
@@ -40,7 +41,7 @@ class ToughJetAdapterTest {
                 returnDate = LocalDate.of(2025, 1, 28),
                 numberOfPassengers = 2
             )
-            val urlSlot = slot<String>()
+            val urlSlot = slot<URI>()
             val bodySlot = slot<ToughJetAdapter.ToughJetRequest>()
             val expected = ToughJetAdapter.ToughJetRequest(
                 from = IATACode("BCN"),
@@ -64,12 +65,12 @@ class ToughJetAdapterTest {
             // then
             verify(exactly = 1) {
                 restTemplate.postForObject(
-                    any<String>(),
+                    any<URI>(),
                     any(),
                     Array<ToughJetAdapter.ToughJetResponse>::class.java
                 )
             }
-            assertEquals("https://api.toughjet.com/flights", urlSlot.captured)
+            assertEquals(URI.create("https://api.toughjet.com/flights"), urlSlot.captured)
             assertEquals(expected, bodySlot.captured)
         }
     }
@@ -111,7 +112,7 @@ class ToughJetAdapterTest {
 
             every {
                 restTemplate.postForObject(
-                    any<String>(),
+                    any<URI>(),
                     any(),
                     Array<ToughJetAdapter.ToughJetResponse>::class.java
                 )

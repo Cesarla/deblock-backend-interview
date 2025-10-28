@@ -24,6 +24,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.google.guava:guava:33.5.0-jre")
+    implementation("dev.failsafe:failsafe:3.3.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")

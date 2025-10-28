@@ -1,20 +1,44 @@
 package org.deblock.exercise.infraestructure.adapters
 
+import dev.failsafe.CircuitBreaker
+import dev.failsafe.Failsafe
 import org.deblock.exercise.domain.model.Flight
 import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
 import org.deblock.exercise.domain.port.outbound.FlightSupplierPort
+import org.slf4j.LoggerFactory
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.util.UriComponentsBuilder
 import java.math.BigDecimal
+import java.net.URI
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class CrazyAirAdapter  (
-    private val restTemplate: RestTemplate = RestTemplate()
+class CrazyAirAdapter(
+    private val restTemplate: RestTemplate = RestTemplate(),
+    val uri: URI = URI.create("https://api.crazyair.com/flights")
 ) : FlightSupplierPort {
-    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> {
 
+    private val logger = LoggerFactory.getLogger(CrazyAirAdapter::class.java)
+
+    private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
+        .withFailureThreshold(5, 10)
+        .withSuccessThreshold(3, 10)
+        .withDelay(Duration.ofSeconds(5))
+        .build()
+
+    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> {
+        return try {
+            Failsafe.with(circuitBreaker).get { ->
+                performSearch(request)
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to search flights from CrazyAir", e)
+            emptyList()
+        }
+    }
+
+    fun performSearch(request: FlightSearchRequest): List<Flight> {
         val request = CrazyAirRequest(
             request.origin,
             request.destination,
@@ -22,11 +46,8 @@ class CrazyAirAdapter  (
             request.returnDate,
             request.numberOfPassengers
         )
-        val url = UriComponentsBuilder
-            .fromHttpUrl("https://api.crazyair.com/flights")
-            .toUriString()
 
-        val response = restTemplate.postForObject(url, request, Array<CrazyAirResponse>::class.java)
+        val response = restTemplate.postForObject(uri, request, Array<CrazyAirResponse>::class.java)
         return response?.map { it.toFlight() } ?: emptyList()
     }
 
@@ -48,6 +69,7 @@ class CrazyAirAdapter  (
         val returnDate: LocalDate,
         val passengerCount: Int
     )
+
     data class CrazyAirResponse(
         val airline: String,
         val price: BigDecimal,

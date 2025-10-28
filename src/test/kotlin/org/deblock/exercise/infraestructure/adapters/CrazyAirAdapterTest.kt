@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.springframework.web.client.RestTemplate
 import java.math.BigDecimal
+import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -40,7 +41,7 @@ class CrazyAirAdapterTest {
                 returnDate = LocalDate.of(2025, 1, 28),
                 numberOfPassengers = 2
             )
-            val urlSlot = slot<String>()
+            val urlSlot = slot<URI>()
             val bodySlot = slot<CrazyAirAdapter.CrazyAirRequest>()
             val expected = CrazyAirAdapter.CrazyAirRequest(
                 origin = IATACode("MAD"),
@@ -64,14 +65,14 @@ class CrazyAirAdapterTest {
             // then
             verify(exactly = 1) {
                 restTemplate.postForObject(
-                    any<String>(),
+                    any<URI>(),
                     any(),
                     Array<CrazyAirAdapter.CrazyAirResponse>::class.java
                 )
             }
             val url = urlSlot.captured
             val body = bodySlot.captured
-            assertEquals("https://api.crazyair.com/flights", url)
+            assertEquals(URI.create("https://api.crazyair.com/flights"), url)
             assertEquals(expected, body)
         }
     }
@@ -111,7 +112,7 @@ class CrazyAirAdapterTest {
 
             every {
                 restTemplate.postForObject(
-                    any<String>(),
+                    any<URI>(),
                     any(),
                     Array<CrazyAirAdapter.CrazyAirResponse>::class.java
                 )

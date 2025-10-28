@@ -1,24 +1,49 @@
 package org.deblock.exercise.infraestructure.adapters
 
+import dev.failsafe.CircuitBreaker
+import dev.failsafe.Failsafe
 import org.deblock.exercise.domain.model.Flight
 import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
 import org.deblock.exercise.domain.port.outbound.FlightSupplierPort
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
+import java.net.URI
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset.UTC
 
 @Component
 class ToughJetAdapter(
-    private val restTemplate: RestTemplate = RestTemplate()
+    private val restTemplate: RestTemplate = RestTemplate(),
+    private val uri : URI = URI.create("https://api.toughjet.com/flights")
 ) : FlightSupplierPort {
-    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> {
 
+    private val logger = LoggerFactory.getLogger(FlightSupplierPort::class.java)
+
+    private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
+        .withFailureThreshold(5, 10)
+        .withSuccessThreshold(3, 10)
+        .withDelay(Duration.ofSeconds(5))
+        .build()
+
+    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> {
+        return try {
+            Failsafe.with(circuitBreaker).get { ->
+                performSearch(request)
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to search flights from ToughJet", e)
+            emptyList()
+        }
+    }
+
+    fun performSearch(request: FlightSearchRequest): List<Flight> {
         val request = ToughJetRequest(
             request.origin,
             request.destination,
@@ -26,11 +51,8 @@ class ToughJetAdapter(
             request.returnDate,
             request.numberOfPassengers
         )
-        val url = UriComponentsBuilder
-            .fromHttpUrl("https://api.toughjet.com/flights")
-            .toUriString()
 
-        val response = restTemplate.postForObject(url, request, Array<ToughJetResponse>::class.java)
+        val response = restTemplate.postForObject(uri, request, Array<ToughJetResponse>::class.java)
         return response?.map { it.toFlight() } ?: emptyList()
     }
 
