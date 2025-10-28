@@ -1,0 +1,36 @@
+package org.deblock.exercise.infraestructure.entrypoints
+
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.HttpRequestMethodNotSupportedException
+import org.springframework.web.bind.annotation.ControllerAdvice
+import org.springframework.web.bind.annotation.ExceptionHandler
+
+@ControllerAdvice
+class ErrorHandler {
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleArgumentStateException(ex: IllegalArgumentException): ResponseEntity<Problem> {
+        val response = Problem(HttpStatus.BAD_REQUEST, ex.message)
+        return ResponseEntity.badRequest().body(response)
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<Problem> {
+        val response = Problem(HttpStatus.BAD_REQUEST, ex.mostSpecificCause?.message)
+        return ResponseEntity.badRequest().body(response)
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleHttpRequestMethodNotSupportedException(ex: HttpRequestMethodNotSupportedException): ResponseEntity<Problem> {
+        val response = Problem(HttpStatus.METHOD_NOT_ALLOWED, ex.message)
+        return ResponseEntity.status(response.status).body(response)
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleException(ex: Exception): ResponseEntity<Problem> {
+        val response = Problem(HttpStatus.INTERNAL_SERVER_ERROR, ex.message)
+        return ResponseEntity.internalServerError().body(response)
+    }
+}
