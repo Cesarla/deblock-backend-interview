@@ -10,7 +10,9 @@ import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
 import org.deblock.exercise.domain.port.outbound.FlightSupplierPort
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.math.BigDecimal
 import java.net.URI
@@ -18,8 +20,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@Component
 class CrazyAirAdapter(
-    private val restTemplate: RestTemplate = RestTemplate(),
+    @Qualifier("crazyAirRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${crazy.air.url}") val uri: URI
 ) : FlightSupplierPort {
 

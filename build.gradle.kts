@@ -25,6 +25,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.google.guava:guava:33.5.0-jre")
     implementation("dev.failsafe:failsafe:3.3.2")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
+    implementation("org.apache.httpcomponents.core5:httpcore5:5.3.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")

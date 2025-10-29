@@ -10,6 +10,7 @@ import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
 import org.deblock.exercise.domain.port.outbound.FlightSupplierPort
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -23,7 +24,7 @@ import java.time.ZoneOffset.UTC
 
 @Component
 class ToughJetAdapter(
-    private val restTemplate: RestTemplate = RestTemplate(),
+    @Qualifier("toughJetRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${tough.jet.url}") private val uri: URI
 ) : FlightSupplierPort {
 
