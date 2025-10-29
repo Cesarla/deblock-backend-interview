@@ -1,5 +1,7 @@
 package org.deblock.exercise.infraestructure.entrypoints
 
+import dev.failsafe.CircuitBreakerOpenException
+import dev.failsafe.TimeoutExceededException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -26,6 +28,24 @@ class ErrorHandler {
     fun handleHttpRequestMethodNotSupportedException(ex: HttpRequestMethodNotSupportedException): ResponseEntity<Problem> {
         val response = Problem(HttpStatus.METHOD_NOT_ALLOWED, ex.message)
         return ResponseEntity.status(response.status).body(response)
+    }
+
+    @ExceptionHandler(CircuitBreakerOpenException::class)
+    fun handleCircuitBreakerOpen(ex: CircuitBreakerOpenException): ResponseEntity<Problem> {
+        val response = Problem(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Service temporarily unavailable"
+        )
+        return ResponseEntity.status(503).body(response)
+    }
+
+    @ExceptionHandler(TimeoutExceededException::class)
+    fun handleTimeout(ex: TimeoutExceededException): ResponseEntity<Problem> {
+        val response = Problem(
+            HttpStatus.GATEWAY_TIMEOUT,
+            "Request timeout"
+        )
+        return ResponseEntity.status(504).body(response)
     }
 
     @ExceptionHandler(Exception::class)

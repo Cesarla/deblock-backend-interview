@@ -205,7 +205,7 @@ class FlightServiceTest {
 
         // then
         assertEquals(2, flights.size)
-        assertEquals(successfulFlights[0], flights[0]) // sorted by fare
+        assertEquals(successfulFlights[0], flights[0])
         assertEquals(successfulFlights[1], flights[1])
         coVerify(exactly = 1) { failingA.searchFlights(request) }
         coVerify(exactly = 1) { failingB.searchFlights(request) }

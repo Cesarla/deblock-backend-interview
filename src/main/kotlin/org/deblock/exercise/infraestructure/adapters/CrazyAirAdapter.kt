@@ -2,6 +2,9 @@ package org.deblock.exercise.infraestructure.adapters
 
 import dev.failsafe.CircuitBreaker
 import dev.failsafe.Failsafe
+import dev.failsafe.Timeout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.deblock.exercise.domain.model.Flight
 import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
@@ -22,15 +25,19 @@ class CrazyAirAdapter(
 
     private val logger = LoggerFactory.getLogger(CrazyAirAdapter::class.java)
 
+    private val timeout = Timeout.builder<List<Flight>>(Duration.ofMillis(300))
+        .withInterrupt()
+        .build()
+
     private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
         .withFailureThreshold(5, 10)
         .withSuccessThreshold(3, 10)
         .withDelay(Duration.ofSeconds(5))
         .build()
 
-    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> {
-        return try {
-            Failsafe.with(circuitBreaker).get { ->
+    override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> = withContext(Dispatchers.IO) {
+        try {
+            Failsafe.with(timeout, circuitBreaker).get { ->
                 performSearch(request)
             }
         } catch (e: Exception) {
