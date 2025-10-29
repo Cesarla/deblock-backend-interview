@@ -26,25 +26,13 @@ class CrazyAirAdapter(
     @Value("\${crazy.air.url}") val uri: URI
 ) : FlightSupplierPort {
 
-    private val logger = LoggerFactory.getLogger(CrazyAirAdapter::class.java)
-
-    private val timeout = Timeout.builder<List<Flight>>(Duration.ofMillis(300))
-        .withInterrupt()
-        .build()
-
-    private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
-        .withFailureThreshold(5, 10)
-        .withSuccessThreshold(3, 10)
-        .withDelay(Duration.ofSeconds(5))
-        .build()
-
     override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> = withContext(Dispatchers.IO) {
         try {
             Failsafe.with(timeout, circuitBreaker).get { ->
                 performSearch(request)
             }
         } catch (e: Exception) {
-            logger.error("Failed to search flights from CrazyAir", e)
+            LOG.error("Failed to search flights from CrazyAir", e)
             emptyList()
         }
     }
@@ -91,4 +79,18 @@ class CrazyAirAdapter(
     )
 
     override fun supplier(): String = "CrazyAir"
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(CrazyAirAdapter::class.java)
+
+        private val timeout = Timeout.builder<List<Flight>>(Duration.ofMillis(300))
+            .withInterrupt()
+            .build()
+
+        private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
+            .withFailureThreshold(5, 10)
+            .withSuccessThreshold(3, 10)
+            .withDelay(Duration.ofSeconds(5))
+            .build()
+    }
 }

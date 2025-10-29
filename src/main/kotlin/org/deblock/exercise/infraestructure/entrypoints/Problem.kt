@@ -2,7 +2,7 @@ package org.deblock.exercise.infraestructure.entrypoints
 
 import org.springframework.http.HttpStatus
 
-data class Problem (
+data class Problem(
     val title: String,
     val status: Int,
     val detail: String?

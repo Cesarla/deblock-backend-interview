@@ -1,6 +1,6 @@
 package org.deblock.exercise.domain.model
 
-import com.google.common.base.Preconditions.*
+import com.google.common.base.Preconditions.checkArgument
 
 @JvmInline
 value class IATACode(val code: String) {

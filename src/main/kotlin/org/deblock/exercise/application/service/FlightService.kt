@@ -16,8 +16,6 @@ class FlightService(
     private val suppliers: List<FlightSupplierPort>
 ) : FlightSupportUseCase {
 
-    private val logger = LoggerFactory.getLogger(FlightService::class.java)
-
     override fun searchFlights(request: FlightSearchRequest): List<Flight> = runBlocking {
         coroutineScope {
             suppliers
@@ -26,7 +24,7 @@ class FlightService(
                         runCatching {
                             supplier.searchFlights(request)
                         }.getOrElse { e ->
-                            logger.error("Unexpected error while processing ${supplier.supplier()}", e)
+                            LOG.error("Unexpected error while processing ${supplier.supplier()}", e)
                             emptyList()
                         }
                     }
@@ -36,4 +34,9 @@ class FlightService(
                 .sortedBy { it.fare }
         }
     }
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(FlightService::class.java)
+    }
+
 }

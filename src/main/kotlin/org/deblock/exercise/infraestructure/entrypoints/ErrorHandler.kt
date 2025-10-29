@@ -20,7 +20,7 @@ class ErrorHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<Problem> {
-        val response = Problem(HttpStatus.BAD_REQUEST, ex.mostSpecificCause?.message)
+        val response = Problem(HttpStatus.BAD_REQUEST, ex.mostSpecificCause.message)
         return ResponseEntity.badRequest().body(response)
     }
 
@@ -34,13 +34,13 @@ class ErrorHandler {
     fun handleCircuitBreakerOpen(ex: CircuitBreakerOpenException): ResponseEntity<Problem> {
         val response = Problem(
             HttpStatus.SERVICE_UNAVAILABLE,
-            "Service temporarily unavailable"
+            ex.message ?: "Service temporarily unavailable"
         )
         return ResponseEntity.status(503).body(response)
     }
 
     @ExceptionHandler(TimeoutExceededException::class)
-    fun handleTimeout(ex: TimeoutExceededException): ResponseEntity<Problem> {
+    fun handleTimeout(ignored: TimeoutExceededException): ResponseEntity<Problem> {
         val response = Problem(
             HttpStatus.GATEWAY_TIMEOUT,
             "Request timeout"

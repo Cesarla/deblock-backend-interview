@@ -21,15 +21,13 @@ import org.springframework.web.client.RestTemplate
 @EnableScheduling
 class HttpClientConfig {
 
-    private val logger = LoggerFactory.getLogger(HttpClientConfig::class.java)
-
     private var crazyAirConnectionManager: PoolingHttpClientConnectionManager? = null
     private var toughJetConnectionManager: PoolingHttpClientConnectionManager? = null
 
     @Bean("crazyAirPoolingConnectionManager")
     fun crazyAirPoolingConnectionManager(): PoolingHttpClientConnectionManager {
         val manager = PoolingHttpClientConnectionManager()
-        manager.maxTotal = 500
+        manager.maxTotal = 200
         manager.defaultMaxPerRoute = 100
 
         val connectionConfig = ConnectionConfig.custom()
@@ -45,7 +43,7 @@ class HttpClientConfig {
     @Bean("toughJetPoolingConnectionManager")
     fun toughJetPoolingConnectionManager(): PoolingHttpClientConnectionManager {
         val manager = PoolingHttpClientConnectionManager()
-        manager.maxTotal = 500
+        manager.maxTotal = 200
         manager.defaultMaxPerRoute = 100
 
         val connectionConfig = ConnectionConfig.custom()
@@ -107,17 +105,23 @@ class HttpClientConfig {
     fun idleConnectionMonitor() {
         try {
             crazyAirConnectionManager?.let {
-                logger.debug("Closing expired and idle connections for CrazyAir")
+                LOG.debug("Closing expired and idle connections for CrazyAir")
                 it.closeExpired()
                 it.closeIdle(TimeValue.ofSeconds(30))
             }
             toughJetConnectionManager?.let {
-                logger.debug("Closing expired and idle connections for ToughJet")
+                LOG.debug("Closing expired and idle connections for ToughJet")
                 it.closeExpired()
                 it.closeIdle(TimeValue.ofSeconds(30))
             }
         } catch (e: Exception) {
-            logger.error("Error during idle connection cleanup", e)
+            LOG.error("Error during idle connection cleanup", e)
         }
+    }
+
+    companion object {
+
+        private val LOG = LoggerFactory.getLogger(HttpClientConfig::class.java)
+
     }
 }

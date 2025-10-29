@@ -11,7 +11,10 @@ data class FlightSearchRequest(
     val numberOfPassengers: Int,
 ) {
     init {
-        checkArgument(numberOfPassengers >= 1 && numberOfPassengers <= 4, "Number of passengers must be between 1 and 4")
+        checkArgument(
+            numberOfPassengers >= 1 && numberOfPassengers <= 4,
+            "Number of passengers must be between 1 and 4"
+        )
         checkArgument(departureDate.isBefore(returnDate), "Departure date must be before the return date")
     }
 }

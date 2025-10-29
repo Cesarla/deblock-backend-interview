@@ -28,17 +28,20 @@ class ToughJetAdapter(
     @Value("\${tough.jet.url}") private val uri: URI
 ) : FlightSupplierPort {
 
-    private val logger = LoggerFactory.getLogger(FlightSupplierPort::class.java)
+    companion object {
 
-    private val timeout = Timeout.builder<List<Flight>>(Duration.ofMillis(300))
-        .withInterrupt()
-        .build()
+        private val LOG = LoggerFactory.getLogger(FlightSupplierPort::class.java)
 
-    private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
-        .withFailureThreshold(5, 10)
-        .withSuccessThreshold(3, 10)
-        .withDelay(Duration.ofSeconds(5))
-        .build()
+        private val timeout = Timeout.builder<List<Flight>>(Duration.ofMillis(300))
+            .withInterrupt()
+            .build()
+
+        private val circuitBreaker = CircuitBreaker.builder<List<Flight>>()
+            .withFailureThreshold(5, 10)
+            .withSuccessThreshold(3, 10)
+            .withDelay(Duration.ofSeconds(5))
+            .build()
+    }
 
     override suspend fun searchFlights(request: FlightSearchRequest): List<Flight> = withContext(Dispatchers.IO) {
         try {
@@ -46,7 +49,7 @@ class ToughJetAdapter(
                 performSearch(request)
             }
         } catch (e: Exception) {
-            logger.error("Failed to search flights from ToughJet", e)
+            LOG.error("Failed to search flights from ToughJet", e)
             emptyList()
         }
     }
