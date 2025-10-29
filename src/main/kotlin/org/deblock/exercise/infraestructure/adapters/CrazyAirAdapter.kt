@@ -7,6 +7,7 @@ import org.deblock.exercise.domain.model.FlightSearchRequest
 import org.deblock.exercise.domain.model.IATACode
 import org.deblock.exercise.domain.port.outbound.FlightSupplierPort
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.client.RestTemplate
 import java.math.BigDecimal
 import java.net.URI
@@ -16,7 +17,7 @@ import java.time.LocalDateTime
 
 class CrazyAirAdapter(
     private val restTemplate: RestTemplate = RestTemplate(),
-    val uri: URI = URI.create("https://api.crazyair.com/flights")
+    @Value("\${crazy.air.url}") val uri: URI
 ) : FlightSupplierPort {
 
     private val logger = LoggerFactory.getLogger(CrazyAirAdapter::class.java)

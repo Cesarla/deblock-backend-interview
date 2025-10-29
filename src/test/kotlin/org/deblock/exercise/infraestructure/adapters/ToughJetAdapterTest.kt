@@ -27,7 +27,7 @@ class ToughJetAdapterTest {
     @BeforeEach
     fun setUp() {
         restTemplate = mockk()
-        adapter = ToughJetAdapter(restTemplate)
+        adapter = ToughJetAdapter(restTemplate, URI.create("https://api.toughjet.com/flights"))
     }
 
     @Test

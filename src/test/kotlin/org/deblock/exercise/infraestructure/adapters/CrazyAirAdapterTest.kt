@@ -27,7 +27,7 @@ class CrazyAirAdapterTest {
     @BeforeEach
     fun setUp() {
         restTemplate = mockk()
-        adapter = CrazyAirAdapter(restTemplate)
+        adapter = CrazyAirAdapter(restTemplate, URI.create("https://api.crazyair.com/flights"))
     }
 
     @Test
